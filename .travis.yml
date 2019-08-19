@@ -1,0 +1,14 @@
+sudo: required
+
+language: c
+
+cache:
+  ccache: true
+  directories:
+    - cache
+
+dist: xenial
+group: unstable
+
+script:
+  - ./run.sh
