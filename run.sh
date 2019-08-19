@@ -9,7 +9,7 @@ function build_kernel() {
 	if [[ ! -e "$kernel_bzimage" ]]
 	then
 		# Download source code
-		local kernel_src_dir=src/linux-$kernel_commit
+		local kernel_src_dir=$top/src/linux-$kernel_commit
 		if [[ ! -d "$kernel_src_dir" ]]
 		then
 			mkdir -p "$kernel_src_dir".tmp
@@ -51,8 +51,9 @@ function build_kernel() {
 
 ### Configuration
 
-work_dir=work
-cache_dir=cache
+top=$PWD
+work_dir=$top/work
+cache_dir=$top/cache
 source ./config.sh
 # You can put local configuration (e.g. location of scratch or cache dirs) here
 if [[ -f ./config-local.sh ]] ; then source ./config-local.sh ; fi
@@ -61,7 +62,6 @@ for arg in "$@" ; do eval "$arg" ; done
 
 ### Setup
 
-top=$PWD
 self_sha1=$(sha1sum "$0" | cut -c 1-40)
 mkdir -p "$cache_dir"
 
