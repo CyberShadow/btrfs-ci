@@ -1,0 +1,26 @@
+- [ ] TODO
+  - [ ] Kernel build
+    - [ ] Speed up
+      - [ ] Exclude:
+        - [ ] fs/ext4
+        - [ ] fs/jbd2
+        - [ ] drivers/acpi
+        - [ ] drivers/gpu
+        - [ ] drivers/sound
+        - [ ] net/9p ?
+        - [ ] net/ipv4 ?
+- [-] Goals
+  - [ ] Tasks
+    - [ ] Build kernel
+    - [ ] Build btrfs-progs
+    - [ ] Run xfstests on kernel
+    - [ ] Run btrfs-progs test suite (against kernel)
+  - [-] Constraints
+    - [ ] As fast as possible
+    - [ ] Don't require root
+    - [ ] Environments
+      - [ ] Travis CI
+      - [ ] GitLab CI ?
+    - [X] UML?
+      - We will be using UML because neither Travis nor GitLab CI provide KVM.
+      - UML is slower than KVM, but much faster than qemu without KVM.
