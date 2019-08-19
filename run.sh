@@ -54,13 +54,13 @@ function build_kernel() {
 }
 
 function build_image() {
-	rm -rf "$work_dir"/root
-	mkdir -p "$work_dir"/root
-
 	local image_build_id="$image_arch_date"-"$self_sha1"
 	image="$cache_dir"/image-"$image_build_id"
 	if [[ ! -f "$image" ]]
 	then
+		rm -rf "$work_dir"/root
+		mkdir -p "$work_dir"/root
+
 		# debootstrap has a hard requirement on root, so we can't use Debian.
 		# Instead use Arch Linux, for which fakeroot and fakechroot suffice.
 		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" FAKECHROOT_EXCLUDE_PATH=/dev:/proc:/sys fakeroot bash -s <<-'IMAGEEOF'
