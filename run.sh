@@ -58,28 +58,38 @@ function build_image() {
 	image="$cache_dir"/image-"$image_build_id"
 	if [[ ! -f "$image" ]]
 	then
-		rm -rf "$work_dir"/root
+		if [[ -d "$work_dir"/root ]]
+		then
+			chmod -R u+w "$work_dir"/root
+			rm -rf "$work_dir"/root
+		fi
 		mkdir -p "$work_dir"/root
 
 		# debootstrap has a hard requirement on root, so we can't use Debian.
 		# Instead use Arch Linux, for which fakeroot and fakechroot suffice.
-		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" FAKECHROOT_EXCLUDE_PATH=/dev:/proc:/sys fakeroot bash -s <<-'IMAGEEOF'
+		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" PROOT_NO_SECCOMP=1 proot -0 bash -s <<-'IMAGEEOF'
 			set -xeEuo pipefail
 			curl "https://archive.archlinux.org/iso/$ARCH_DATE/archlinux-bootstrap-$ARCH_DATE-x86_64.tar.gz" |
-				tar zxv -C "$WORK_DIR"/root
+				tar zx -C "$WORK_DIR"/root
+		IMAGEEOF
 
-			fakechroot --elfloader "$WORK_DIR"/root/root.x86_64/usr/lib/ld-linux-x86-64.so.2 chroot "$WORK_DIR"/root/root.x86_64 bash -s <<-'ARCHEOF'
+		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" PROOT_NO_SECCOMP=1 proot -0 -S "$work_dir"/root/root.x86_64 bash -s <<-'IMAGEEOF'
+			# chroot "$WORK_DIR"/root/root.x86_64
+			bash -s <<-'ARCHEOF'
 				set -xeEuo pipefail
 				pacman-key --init
 				pacman-key --populate archlinux
 				echo "Server=https://archive.archlinux.org/repos/${ARCH_DATE//.//}/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
 				pacman -Sy
 				pacman -S --noconfirm btrfs-progs
+				gpgconf --homedir /etc/pacman.d/gnupg --kill gpg-agent
 			ARCHEOF
+		IMAGEEOF
 
+		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" PROOT_NO_SECCOMP=1 proot -0 bash -s <<-'IMAGEEOF'
 			dd if=/dev/zero of="$IMAGE".tmp bs=1G count=0 seek=1
 			mkfs.ext4 "$IMAGE".tmp -d "$WORK_DIR"/root/root.x86_64
-			rm -rf "$WORK_DIR"/root
+			# rm -rf "$WORK_DIR"/root
 			mv "$IMAGE".tmp "$IMAGE"
 		IMAGEEOF
 	fi

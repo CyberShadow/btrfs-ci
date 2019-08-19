@@ -3,8 +3,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - fakeroot
-      - fakechroot
+      - proot
 
 language: c
 
