@@ -1,4 +1,10 @@
-sudo: required
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - fakeroot
+      - fakechroot
 
 language: c
 
