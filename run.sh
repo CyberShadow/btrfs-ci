@@ -2,11 +2,9 @@
 set -eEuo pipefail
 
 function build_kernel() {
-	local kernel_build_id
-	kernel_build_id="$kernel_commit"-"$self_sha1"
-
-	kernel_bzimage="$cache_dir"/linux-bzImage-"$kernel_build_id"
-	if [[ ! -e "$kernel_bzimage" ]]
+	local kernel_build_id="$kernel_commit"-"$self_sha1"
+	kernel_binary="$cache_dir"/linux-"$kernel_build_id"
+	if [[ ! -e "$kernel_binary" ]]
 	then
 		# Download source code
 		local kernel_src_dir=$top/src/linux-$kernel_commit
@@ -22,8 +20,14 @@ function build_kernel() {
 		rm -rf "$work_dir"/linux
 		mkdir -p "$work_dir"/linux
 
-		make -C "$kernel_src_dir" O="$work_dir"/linux x86_64_defconfig
-		make -C "$kernel_src_dir" O="$work_dir"/linux kvmconfig
+		# shellcheck disable=SC2191
+		local make_args=(
+			make
+			-C "$kernel_src_dir"
+			ARCH=um
+			O="$work_dir"/linux
+		)
+		"${make_args[@]}" x86_64_defconfig
 
 		(
 			echo 'CONFIG_BTRFS_FS=y'
@@ -40,12 +44,12 @@ function build_kernel() {
 		#	echo 'CONFIG_GDB_SCRIPTS=y'
 		) >> "$work_dir"/linux/.config
 
-		make -C "$kernel_src_dir" O="$work_dir"/linux olddefconfig
+		"${make_args[@]}" olddefconfig
 
 		# Build
-		make -C "$kernel_src_dir" O="$work_dir"/linux -j"$(nproc)"
+		"${make_args[@]}" -j"$(nproc)"
 
-		cp "$work_dir"/linux/arch/x86_64/boot/bzImage "$kernel_bzimage"
+		cp "$work_dir"/linux/vmlinux "$kernel_binary"
 	fi
 }
 
