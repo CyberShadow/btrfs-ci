@@ -74,22 +74,20 @@ function build_image() {
 		IMAGEEOF
 
 		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" PROOT_NO_SECCOMP=1 proot -0 -S "$work_dir"/root/root.x86_64 bash -s <<-'IMAGEEOF'
-			# chroot "$WORK_DIR"/root/root.x86_64
-			bash -s <<-'ARCHEOF'
-				set -xeEuo pipefail
-				pacman-key --init
-				pacman-key --populate archlinux
-				echo "Server=https://archive.archlinux.org/repos/${ARCH_DATE//.//}/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
-				pacman -Sy
-				pacman -S --noconfirm btrfs-progs
-				gpgconf --homedir /etc/pacman.d/gnupg --kill gpg-agent
-			ARCHEOF
+			set -xeEuo pipefail
+			pacman-key --init
+			pacman-key --populate archlinux
+			echo "Server=https://archive.archlinux.org/repos/${ARCH_DATE//.//}/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
+			pacman -Sy
+			pacman -S --noconfirm btrfs-progs
+			gpgconf --homedir /etc/pacman.d/gnupg --kill gpg-agent
 		IMAGEEOF
 
 		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" PROOT_NO_SECCOMP=1 proot -0 bash -s <<-'IMAGEEOF'
+			set -xeEuo pipefail
 			dd if=/dev/zero of="$IMAGE".tmp bs=1G count=0 seek=1
 			mkfs.ext4 "$IMAGE".tmp -d "$WORK_DIR"/root/root.x86_64
-			# rm -rf "$WORK_DIR"/root
+			rm -rf "$WORK_DIR"/root
 			mv "$IMAGE".tmp "$IMAGE"
 		IMAGEEOF
 	fi
