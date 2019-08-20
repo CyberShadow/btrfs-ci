@@ -39,3 +39,7 @@
       - We will be using UML because neither Travis nor GitLab CI provide KVM.
       - UML is slower than KVM, but much faster than qemu without KVM.
 - [ ] Don't cache all build IDs, just the last (delete old version on mismatch)
+- [ ] Add coverage analysis
+  - [ ] Add badge
+  - [ ] Use a service to generate a browseable coverage report
+  - [ ] Kernel code too?
