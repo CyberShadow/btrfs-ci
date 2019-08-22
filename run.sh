@@ -53,6 +53,35 @@ function build_kernel() {
 	fi
 }
 
+function build_progs() {
+	local progs_build_id="$btrfs_progs_commit"-"$self_sha1"
+	progs_dir="$cache_dir"/progs-"$progs_build_id"
+
+	if [[ ! -d "$progs_dir" ]]
+	then
+		# Download source code
+		local progs_src_dir=$top/src/progs-$btrfs_progs_commit
+		if [[ ! -d "$progs_src_dir" ]]
+		then
+			mkdir -p "$progs_src_dir".tmp
+			curl -fL https://github.com/kdave/btrfs-progs/archive/"$btrfs_progs_commit".tar.gz |
+				tar zx -C "$progs_src_dir".tmp --strip-components 1
+			mv "$progs_src_dir".tmp "$progs_src_dir"
+		fi
+
+		# Build
+		env -C "$progs_src_dir" ./autogen.sh
+		env -C "$progs_src_dir" ./configure --prefix=
+		env -C "$progs_src_dir" make -j"$(nproc)"
+
+		# Install
+		rm -rf "$progs_dir".tmp
+		mkdir -p "$progs_dir".tmp
+		env -C "$progs_src_dir" make install DESTDIR="$progs_dir".tmp
+		mv "$progs_dir".tmp "$progs_dir"
+	fi
+}
+
 function build_image() {
 	local image_build_id="$image_arch_date"-"$self_sha1"
 	image="$cache_dir"/image-"$image_build_id"
@@ -110,5 +139,6 @@ mkdir -p "$cache_dir"
 ### Main
 
 build_kernel
+build_progs
 build_image
 run_vm

@@ -4,6 +4,22 @@ addons:
   apt:
     packages:
       - fakeroot
+      - xmlto
+      - asciidoc
+      - e2fslibs-dev
+      - libblkid-dev
+      - libacl1-dev
+      - libblkid-dev
+      - liblzo2-dev
+      - libzstd-dev
+      - make
+      - pkg-config
+      - udev
+      - zlib1g-dev
+      - acl
+      - attr
+      - reiserfsprogs
+      - python3-setuptools
 
 language: c
 
