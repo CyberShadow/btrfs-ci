@@ -7,7 +7,7 @@ function build_kernel() {
 	if [[ ! -e "$kernel_binary" ]]
 	then
 		# Download source code
-		local kernel_src_dir=$top/src/linux-$kernel_commit
+		local kernel_src_dir=$work_dir/src/linux-$kernel_commit
 		if [[ ! -d "$kernel_src_dir" ]]
 		then
 			mkdir -p "$kernel_src_dir".tmp
@@ -60,7 +60,7 @@ function build_progs() {
 	if [[ ! -d "$progs_dir" ]]
 	then
 		# Download source code
-		local progs_src_dir=$top/src/progs-$btrfs_progs_commit
+		local progs_src_dir=$work_dir/src/progs-$btrfs_progs_commit
 		if [[ ! -d "$progs_src_dir" ]]
 		then
 			mkdir -p "$progs_src_dir".tmp
