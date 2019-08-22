@@ -70,14 +70,17 @@ function build_progs() {
 		fi
 
 		# Build
-		env -C "$progs_src_dir" ./autogen.sh
-		env -C "$progs_src_dir" ./configure --prefix=
-		env -C "$progs_src_dir" make -j"$(nproc)"
+		(
+			cd "$progs_src_dir"
+			./autogen.sh
+			./configure --prefix=
+		)
+		make -C "$progs_src_dir" -j"$(nproc)"
 
 		# Install
 		rm -rf "$progs_dir".tmp
 		mkdir -p "$progs_dir".tmp
-		env -C "$progs_src_dir" make install DESTDIR="$progs_dir".tmp
+		make -C "$progs_src_dir" install DESTDIR="$progs_dir".tmp
 		mv "$progs_dir".tmp "$progs_dir"
 	fi
 }
