@@ -43,3 +43,21 @@
   - [ ] Add badge
   - [ ] Use a service to generate a browseable coverage report
   - [ ] Kernel code too?
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Goals:
+- btrfs-progs test suite and xfstests running on btrfs-progs and linux kernel built on master
+  - dep: build kernel
+    - (no deps)
+  - dep: build btrfs-progs
+    - option 1: build in Docker
+    - option 2: build in VM (before running test suite)
+      - dep: image
+  - dep: build image
+    1. unpack rootfs
+       - dep: rootfs
+    2. install packages
+       - dep: root (need to build in/with Docker)
+    3. build the image
+       - dep: Docker or btrfs-progs

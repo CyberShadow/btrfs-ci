@@ -1,3 +1,4 @@
 btrfs_progs_commit = 9a85732d8beaae4b80cab98bb3355660389c1d36
 kernel_commit = 33920f1ec5bf47c5c0a1d2113989bdd9dfb3fae9
-image_arch_date = 2019.06.01
+arch_date = 2019.08.01
+arch_tar_sha1 = 7b4edba41dece48f7b1124d160c1beb7c348faf1

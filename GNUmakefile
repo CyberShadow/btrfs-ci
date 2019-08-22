@@ -5,6 +5,8 @@ work_dir = $(top)/work
 cache_dir = $(top)/cache
 self_sha1 = $(shell sha1sum $(lastword $(MAKEFILE_LIST)) | cut -c 1-40)
 
+docker = docker
+
 include config.mk
 -include config-local.mk
 
@@ -28,6 +30,34 @@ kernel : $(kernel_binary)
 $(kernel_binary) : $(kernel_src_dir)
 	src/build-kernel.sh $(kernel_src_dir) $(work_dir)/linux
 	cp $(work_dir)/linux/vmlinux $@
+
+# Docker image
+
+arch_tar_fn=archlinux-bootstrap-$(arch_date)-x86_64.tar.gz
+arch_tar_url=https://archive.archlinux.org/iso/$(arch_date)/$(arch_tar_fn)
+arch_tar_dir=$(work_dir)/arch
+arch_tar=$(arch_tar_dir)/$(arch_tar_fn)
+
+$(arch_tar_dir) :
+	mkdir -p $@
+
+$(arch_tar) : | $(arch_tar_dir)
+	curl --fail --output $@.tmp $(arch_tar_url)
+	printf "%s %s\n" $(arch_tar_sha1) $@.tmp | sha1sum -c
+	mv $@.tmp $@
+
+docker_build_id = $(arch_date)-$(self_sha1)
+docker_ok = $(work_dir)/.docker-image-$(docker_build_id)-ok
+
+docker : $(docker_ok)
+$(docker_ok) : $(arch_tar) docker/Dockerfile
+	$(docker) build \
+		-t btrfs-ci \
+		-f docker/Dockerfile \
+		--build-arg arch_tar="$(arch_tar_fn)" \
+		--build-arg arch_date=$(subst .,/,$(arch_date)) \
+		"$(arch_tar_dir)"
+	touch "$@"
 
 # btrfs-progs
 
@@ -57,11 +87,11 @@ $(progs_dir) : $(progs_src_dir)
 
 # Image
 
-image_build_id = $(image_arch_date)-$(self_sha1)
+image_build_id = $(arch_date)-$(self_sha1)
 image_file = $(cache_dir)/image-$(image_build_id)
 image : $(image_file)
 $(image_file) : $(progs_dir)
-	src/build-image.sh $(work_dir)/root $(progs_dir) $(image_file) $(image_arch_date)
+	src/build-image.sh $(work_dir)/root $(progs_dir) $(image_file) $(arch_date)
 
 # VM
 
