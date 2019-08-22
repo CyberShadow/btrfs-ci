@@ -1,21 +1,10 @@
 #!/bin/bash
 set -eEuo pipefail
 
-/bin/bash
-
 if [[ ! -e /.initialized ]]
 then
 	mount -o remount,rw /
 	mount -t proc proc /proc
-
-	# UML will have limited entropy, however we're not doing anything
-	# secure, so just use unbounded entropy source.
-	cp -pR /dev/urandom /dev/random
-
-	pacman-key --init
-	pacman-key --populate archlinux
-	pacman -Sy
-	pacman -S --noconfirm btrfs-progs
 
 	touch /.initialized
 fi

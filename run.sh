@@ -67,21 +67,10 @@ function build_image() {
 
 		# debootstrap has a hard requirement on root, so we can't use Debian.
 		# Instead use Arch Linux, for which fakeroot and fakechroot suffice.
-		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" PROOT_NO_SECCOMP=1 fakeroot bash -s <<-'IMAGEEOF'
+		WORK_DIR="$work_dir" ARCH_DATE="$image_arch_date" IMAGE="$image" fakeroot bash -s <<-'IMAGEEOF'
 			set -xeEuo pipefail
 			curl "https://archive.archlinux.org/iso/$ARCH_DATE/archlinux-bootstrap-$ARCH_DATE-x86_64.tar.gz" |
 				tar zx -C "$WORK_DIR"/root
-
-			files=(
-				core.db
-			)
-
-			mkdir "$WORK_DIR"/root/root.x86_64/packages
-			for file in "${files[@]}"
-			do
-				wget "https://archive.archlinux.org/repos/${ARCH_DATE//.//}/core/os/x86_64/$file" \
-					-o "$WORK_DIR"/root/root.x86_64/packages/"$file"
-			done
 
 			cat <<-'EOF' > "$WORK_DIR"/root/root.x86_64/etc/init
 				#!/bin/sh
