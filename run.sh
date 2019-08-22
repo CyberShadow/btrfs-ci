@@ -103,6 +103,7 @@ function build_image() {
 top=$PWD
 work_dir=$top/work
 cache_dir=$top/cache
+self_sha1=$(sha1sum "$0" | cut -c 1-40)
 source ./config.sh
 # You can put local configuration (e.g. location of scratch or cache dirs) here
 if [[ -f ./config-local.sh ]] ; then source ./config-local.sh ; fi
@@ -111,7 +112,6 @@ for arg in "$@" ; do eval "$arg" ; done
 
 ### Setup
 
-self_sha1=$(sha1sum "$0" | cut -c 1-40)
 mkdir -p "$cache_dir"
 
 ### Main
