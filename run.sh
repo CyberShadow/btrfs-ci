@@ -98,6 +98,10 @@ function build_image() {
 	fi
 }
 
+function run_vm() {
+	"$kernel_binary" ubd0="$image" hostfs="$top"/mnt
+}
+
 ### Configuration
 
 top=$PWD
@@ -118,3 +122,4 @@ mkdir -p "$cache_dir"
 
 build_kernel
 build_image
+run_vm
