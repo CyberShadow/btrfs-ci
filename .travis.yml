@@ -1,35 +1,13 @@
-sudo: false
+language: minimal
+dist: xenial
 
-addons:
-  apt:
-    packages:
-      - fakeroot
-      - xmlto
-      - asciidoc
-      - e2fslibs-dev
-      - libblkid-dev
-      - libacl1-dev
-      - libblkid-dev
-      - liblzo2-dev
-      - libzstd-dev
-      - make
-      - pkg-config
-      - udev
-      - zlib1g-dev
-      - acl
-      - attr
-      - reiserfsprogs
-      - python3-setuptools
-
-language: c
+services:
+  - docker
 
 cache:
   ccache: true
   directories:
     - cache
 
-dist: xenial
-group: unstable
-
 script:
-  - ./run.sh
+  - make
