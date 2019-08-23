@@ -28,7 +28,8 @@ kernel_build_id = $(kernel_commit)-$(self_sha1)
 kernel_binary = $(cache_dir)/linux-$(kernel_build_id)
 
 kernel : $(kernel_binary)
-$(kernel_binary) : | $(kernel_src_dir)
+$(kernel_binary) :
+	$(MAKE) $(kernel_src_dir)
 	src/build-kernel.sh $(kernel_src_dir) $(work_dir)/linux
 	cp $(work_dir)/linux/vmlinux $@
 
@@ -63,7 +64,8 @@ progs_build_id = $(btrfs_progs_commit)-$(self_sha1)
 progs_dir = $(cache_dir)/progs-$(progs_build_id)
 
 progs : $(progs_dir)
-$(progs_dir) : $(progs_src_dir)
+$(progs_dir) :
+	$(MAKE) $(progs_src_dir)
 	cd $(progs_src_dir) && ./autogen.sh
 	cd $(progs_src_dir) && ./configure --prefix=
 	make -C $(progs_src_dir) -j$(shell nproc)
