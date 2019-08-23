@@ -21,4 +21,11 @@ FROM arch
 
 COPY --from=arch / /arch/
 
-ENTRYPOINT bsdtar cf - /arch/
+RUN printf '#!/bin/sh\n''mount none /mnt -t hostfs && exec /mnt/init\n' > /arch/etc/init && \
+	chmod +x /arch/etc/init
+
+RUN dd if=/dev/zero of=/image bs=1G count=0 seek=1 && \
+	mkfs.ext4 /image -d /arch/
+
+# Use tar to copy holes efficiently
+ENTRYPOINT bsdtar cf - /image

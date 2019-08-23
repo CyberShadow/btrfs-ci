@@ -77,16 +77,19 @@ $(progs_dir) : $(progs_src_dir)
 # Image
 
 image_build_id = $(arch_date)-$(self_sha1)
-image_file = $(cache_dir)/image-$(image_build_id)
+image_dir = $(cache_dir)/image-$(image_build_id)
+image_file = $(cache_dir)/image-$(image_build_id)/image
 image : $(image_file)
-$(image_file) : docker/Dockerfile $(progs_dir)
+$(image_file) : $(arch_tar) docker/Dockerfile
 	$(docker) build \
 		-t btrfs-ci \
-		-f docker/Dockerfile \
+		-f - \
 		--build-arg arch_tar="$(arch_tar_fn)" \
 		--build-arg arch_date=$(subst .,/,$(arch_date)) \
-		"$(arch_tar_dir)"
-	$(docker) run --rm btrfs-ci | fakeroot src/build-image.sh "$(work_dir)"/image $(progs_dir) $@
+		"$(arch_tar_dir)" \
+		< docker/Dockerfile
+	mkdir -p $(image_dir)
+	$(docker) run --rm btrfs-ci | tar x -C $(image_dir)
 
 # VM
 
