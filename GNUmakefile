@@ -60,22 +60,6 @@ $(progs_src_dir) :
 		tar zx -C $@.tmp --strip-components 1
 	mv $@.tmp $@
 
-progs_build_id = $(btrfs_progs_commit)-$(self_sha1)
-progs_dir = $(cache_dir)/progs-$(progs_build_id)
-
-progs : $(progs_dir)
-$(progs_dir) :
-	$(MAKE) $(progs_src_dir)
-	cd $(progs_src_dir) && ./autogen.sh
-	cd $(progs_src_dir) && ./configure --prefix=
-	make -C $(progs_src_dir) -j$(shell nproc)
-
-	# Install
-	rm -rf $@.tmp
-	mkdir -p $@.tmp
-	make -C $(progs_src_dir) install DESTDIR=$@.tmp
-	mv $@.tmp $@
-
 # Image
 
 image_build_id = $(arch_date)-$(self_sha1)
@@ -95,7 +79,10 @@ $(image_file) : $(arch_tar) docker/Dockerfile
 
 # VM
 
-run_vm : $(kernel_binary) $(image_file)
-	$(kernel_binary) ubd0=$(image_file) hostfs=$(top)/mnt
+run_vm : $(kernel_binary) $(image_file) $(progs_src_dir)
+	rm -rf mnt/src
+	mkdir -p mnt/src
+	cp -a $(progs_src_dir) mnt/src/btrfs-progs
+	$(kernel_binary) mem=2048M ubd0=$(image_file) hostfs=$(top)/mnt
 
 .PHONY : all kernel_src kernel progs_src progs image run_vm

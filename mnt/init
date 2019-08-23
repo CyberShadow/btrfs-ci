@@ -1,12 +1,11 @@
 #!/bin/bash
 set -eEuo pipefail
 
-if [[ ! -e /.initialized ]]
-then
-	mount -o remount,rw /
-	mount -t proc proc /proc
+mount -o remount,rw /
+mount -t proc proc /proc
 
-	touch /.initialized
-fi
+export PATH=$PATH
+
+/mnt/build-progs.sh
 
 echo 'OK!'

@@ -13,9 +13,15 @@ RUN pacman-key --init && pacman-key --populate
 ARG arch_date
 RUN echo 'Server=https://archive.archlinux.org/repos/'"${arch_date}"'/$repo/os/$arch' > /etc/pacman.d/mirrorlist
 
-RUN pacman -Syyuu --noconfirm
-#RUN pacman -S --needed --noconfirm base-devel git
+RUN awk '/HoldPkg/{next;}{print;}' /etc/pacman.conf > /etc/pacman.conf.new && mv /etc/pacman.conf.new /etc/pacman.conf
 
+RUN \
+	pacman --noconfirm -Syyuu
+RUN \
+	pacman --noconfirm -D --asdeps $(pacman -Qqe) && \
+	pacman --noconfirm -D --asexplicit bash coreutils e2fsprogs findutils libarchive util-linux && \
+	pacman --noconfirm -S --asexplicit acl asciidoc autoconf automake gcc grep lzo make pkgconf python python-setuptools sed xmlto zstd && \
+	pacman --noconfirm -Rsunc $(pacman -Qtdq)
 
 FROM arch
 
@@ -26,7 +32,7 @@ RUN printf '#!/bin/sh\n''mount none /mnt -t hostfs && exec /mnt/init\n' > /arch/
 
 # Docker can't commit sparse files (efficiently),
 # so we need to tar it up immediately after creation.
-RUN dd if=/dev/zero of=/image bs=1G count=0 seek=1 && \
+RUN dd if=/dev/zero of=/image bs=2G count=0 seek=1 && \
 	mkfs.ext4 /image -d /arch/ && \
 	rm -rf /arch/ && \
 	bsdtar cf /image.tar /image && \
