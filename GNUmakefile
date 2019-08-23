@@ -3,7 +3,7 @@
 top = $(shell pwd)
 work_dir = $(top)/work
 cache_dir = $(top)/cache
-self_sha1 = $(shell sha1sum $(lastword $(MAKEFILE_LIST)) | cut -c 1-40)
+self_sha1 = $(shell cat $(lastword $(MAKEFILE_LIST)) docker/Dockerfile | sha1sum | cut -c 1-40)
 
 docker = docker
 
@@ -15,6 +15,7 @@ all : run_vm
 # Kernel
 
 kernel_src_dir = $(work_dir)/src/linux-$(kernel_commit)
+
 kernel_src : $(kernel_src_dir)
 $(kernel_src_dir) :
 	rm -rf $@.tmp
@@ -27,11 +28,11 @@ kernel_build_id = $(kernel_commit)-$(self_sha1)
 kernel_binary = $(cache_dir)/linux-$(kernel_build_id)
 
 kernel : $(kernel_binary)
-$(kernel_binary) : $(kernel_src_dir)
+$(kernel_binary) : | $(kernel_src_dir)
 	src/build-kernel.sh $(kernel_src_dir) $(work_dir)/linux
 	cp $(work_dir)/linux/vmlinux $@
 
-# Docker image
+# Base rootfs
 
 arch_tar_fn=archlinux-bootstrap-$(arch_date)-x86_64.tar.gz
 arch_tar_url=https://archive.archlinux.org/iso/$(arch_date)/$(arch_tar_fn)
@@ -46,22 +47,10 @@ $(arch_tar) : | $(arch_tar_dir)
 	printf "%s %s\n" $(arch_tar_sha1) $@.tmp | sha1sum -c
 	mv $@.tmp $@
 
-docker_build_id = $(arch_date)-$(self_sha1)
-docker_ok = $(work_dir)/.docker-image-$(docker_build_id)-ok
-
-docker : $(docker_ok)
-$(docker_ok) : $(arch_tar) docker/Dockerfile
-	$(docker) build \
-		-t btrfs-ci \
-		-f docker/Dockerfile \
-		--build-arg arch_tar="$(arch_tar_fn)" \
-		--build-arg arch_date=$(subst .,/,$(arch_date)) \
-		"$(arch_tar_dir)"
-	touch "$@"
-
 # btrfs-progs
 
 progs_src_dir = $(work_dir)/src/progs-$(btrfs_progs_commit)
+
 progs_src : $(progs_src_dir)
 $(progs_src_dir) :
 	rm -rf $@.tmp
@@ -90,8 +79,14 @@ $(progs_dir) : $(progs_src_dir)
 image_build_id = $(arch_date)-$(self_sha1)
 image_file = $(cache_dir)/image-$(image_build_id)
 image : $(image_file)
-$(image_file) : $(progs_dir)
-	src/build-image.sh $(work_dir)/root $(progs_dir) $(image_file) $(arch_date)
+$(image_file) : docker/Dockerfile $(progs_dir)
+	$(docker) build \
+		-t btrfs-ci \
+		-f docker/Dockerfile \
+		--build-arg arch_tar="$(arch_tar_fn)" \
+		--build-arg arch_date=$(subst .,/,$(arch_date)) \
+		"$(arch_tar_dir)"
+	$(docker) run --rm btrfs-ci | fakeroot src/build-image.sh "$(work_dir)"/image $(progs_dir) $@
 
 # VM
 

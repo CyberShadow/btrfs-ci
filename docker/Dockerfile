@@ -4,7 +4,7 @@ ARG arch_tar
 ADD ${arch_tar} /
 
 
-FROM scratch
+FROM scratch AS arch
 
 COPY --from=rootfs /root.x86_64/ /
 
@@ -15,3 +15,10 @@ RUN echo 'Server=https://archive.archlinux.org/repos/'"${arch_date}"'/$repo/os/$
 
 RUN pacman -Syyuu --noconfirm
 #RUN pacman -S --needed --noconfirm base-devel git
+
+
+FROM arch
+
+COPY --from=arch / /arch/
+
+ENTRYPOINT bsdtar cf - /arch/
