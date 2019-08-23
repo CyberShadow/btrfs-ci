@@ -24,8 +24,12 @@ COPY --from=arch / /arch/
 RUN printf '#!/bin/sh\n''mount none /mnt -t hostfs && exec /mnt/init\n' > /arch/etc/init && \
 	chmod +x /arch/etc/init
 
+# Docker can't commit sparse files (efficiently),
+# so we need to tar it up immediately after creation.
 RUN dd if=/dev/zero of=/image bs=1G count=0 seek=1 && \
-	mkfs.ext4 /image -d /arch/
+	mkfs.ext4 /image -d /arch/ && \
+	rm -rf /arch/ && \
+	bsdtar cf /image.tar /image && \
+	rm /image
 
-# Use tar to copy holes efficiently
-ENTRYPOINT bsdtar cf - /image
+ENTRYPOINT cat /image.tar
