@@ -31,6 +31,7 @@ kernel : $(kernel_binary)
 $(kernel_binary) :
 	$(MAKE) $(kernel_src_dir)
 	src/build-kernel.sh $(kernel_src_dir) $(work_dir)/linux
+	mkdir -p $(cache_dir)
 	cp $(work_dir)/linux/vmlinux $@
 
 # Base rootfs
