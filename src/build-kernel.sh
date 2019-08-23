@@ -20,6 +20,8 @@ make_args=(
 (
 	echo 'CONFIG_BTRFS_FS=y'
 	echo 'CONFIG_BTRFS_FS_POSIX_ACL=y'
+
+	echo 'CONFIG_BLK_DEV_LOOP=y'
 	echo 'CONFIG_RAID6_PQ_BENCHMARK=y'
 	echo 'CONFIG_LIBCRC32C=y'
 
