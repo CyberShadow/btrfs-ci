@@ -3,6 +3,9 @@ set -eEuo pipefail
 
 mount -o remount,rw /
 mount -t proc proc /proc
+mount -t sysfs none /sys
+
+# /bin/bash
 
 export PATH=$PATH
 
